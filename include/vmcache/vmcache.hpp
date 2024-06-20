@@ -1592,6 +1592,17 @@ struct vmcacheAdapter
    BTree tree;
 
    public:
+   void forEach(const std::function<const Record&>& consumer) {
+      tree.scanAsc({(u8*)nullptr, 0}, [&](BTreeNode& node, unsigned slot) {
+         memcpy(kk, node.getPrefix(), node.prefixLen);
+         memcpy(kk+node.prefixLen, node.getKey(slot), node.slot[slot].keyLen);
+         typename Record::Key typedKey;
+         Record::unfoldKey(kk, typedKey);
+         consumer(*reinterpret_cast<const Record*>(node.getPayload(slot).data()));
+         return true;
+      });
+   }
+
    void scan(const typename Record::Key& key, const std::function<bool(const typename Record::Key&, const Record&)>& found_record_cb, std::function<void()> reset_if_scan_failed_cb) {
       u8 k[Record::maxFoldLength()];
       u16 l = Record::foldKey(k, key);
