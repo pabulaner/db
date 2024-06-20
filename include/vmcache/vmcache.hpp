@@ -1717,12 +1717,12 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
 
    unsigned nthreads = envOr("THREADS", 1);
    u64 n = envOr("DATASIZE", 3); // 10
-   u64 runForSec = envOr("RUNFOR", 1); // 30
+   u64 runForSec = envOr("RUNFOR", 30);
    bool isRndread = envOr("RNDREAD", 0);
 
    u64 statDiff = 1e8;
    atomic<u64> txProgress(0);
-   atomic<bool> keepRunning(true);
+   atomic<bool> keepRunning(false);
    auto systemName = bm.useExmap ? "exmap" : "vmcache";
 
    auto statFn = [&]() {
@@ -1830,23 +1830,23 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
   bm.writeCount = 0;
   thread statThread(statFn);
 
-  parallel_for(0, nthreads, nthreads, [&](uint64_t worker, uint64_t begin, uint64_t end) {
-     workerThreadId = worker;
-     u64 cnt = 0;
-     u64 start = rdtsc();
-     while (keepRunning.load()) {
-        int w_id = tpcc->urand(1, warehouseCount); // wh crossing
-        tpcc->tx(w_id);
-        cnt++;
-        u64 stop = rdtsc();
-        if ((stop-start) > statDiff) {
-           txProgress += cnt;
-           start = stop;
-           cnt = 0;
-        }
-     }
-     txProgress += cnt;
-  });
+//   parallel_for(0, nthreads, nthreads, [&](uint64_t worker, uint64_t begin, uint64_t end) {
+//      workerThreadId = worker;
+//      u64 cnt = 0;
+//      u64 start = rdtsc();
+//      while (keepRunning.load()) {
+//         int w_id = tpcc->urand(1, warehouseCount); // wh crossing
+//         tpcc->tx(w_id);
+//         cnt++;
+//         u64 stop = rdtsc();
+//         if ((stop-start) > statDiff) {
+//            txProgress += cnt;
+//            start = stop;
+//            cnt = 0;
+//         }
+//      }
+//      txProgress += cnt;
+//   });
 
   statThread.join();
    cerr << "space: " << (bm.allocCount.load()*pageSize)/(float)bm.gb << " GB " << endl;
