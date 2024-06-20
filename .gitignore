@@ -1,0 +1,8 @@
+bin/
+data/
+target/
+*.out
+.DS_Store
+perf*
+.gdb_history
+block
