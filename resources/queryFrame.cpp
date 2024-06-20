@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 #include <cassert>
-#include <qp/common/perfevent.hpp>
 #include "p2c/tpch.hpp"
 #include "vmcache/vmcache.hpp"
 
@@ -37,7 +36,6 @@ int main(int argc, char** argv) {
    TPCCWorkload<vmcacheAdapter>* dbptr = getTPCCWorkload(argc, argv);
    TPCCWorkload<vmcacheAdapter>& db = *dbptr;
 
-   BenchmarkParameters params;
 //   params.setParam("task", TASK_NAME_OD);
 //   params.setParam("workload", tpch_scale);
 //   params.setParam("variant", VARIANT_NAME_OD);

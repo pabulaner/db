@@ -1727,13 +1727,13 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
    }
 
    unsigned nthreads = envOr("THREADS", 1);
-   u64 n = envOr("DATASIZE", 1); // 10
-   u64 runForSec = envOr("RUNFOR", 1); // 30
+   u64 n = envOr("DATASIZE", 3); // 10
+   u64 runForSec = envOr("RUNFOR", 30);
    bool isRndread = envOr("RNDREAD", 0);
 
    u64 statDiff = 1e8;
    atomic<u64> txProgress(0);
-   atomic<bool> keepRunning(true);
+   atomic<bool> keepRunning(false);
    auto systemName = bm.useExmap ? "exmap" : "vmcache";
 
    auto statFn = [&]() {
@@ -1819,28 +1819,28 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
 
    TPCCWorkload<vmcacheAdapter>* tpcc = new TPCCWorkload<vmcacheAdapter>(warehouse, district, customer, customerwdl, history, neworder, order, order_wdc, orderline, item, stock, true, warehouseCount, true);
 
-//   {
-//      tpcc->loadItem();
-//      tpcc->loadWarehouse();
-//
-//      parallel_for(1, warehouseCount+1, nthreads, [&](uint64_t worker, uint64_t begin, uint64_t end) {
-//         workerThreadId = worker;
-//         for (Integer w_id=begin; w_id<end; w_id++) {
-//            tpcc->loadStock(w_id);
-//            tpcc->loadDistrinct(w_id);
-//            for (Integer d_id = 1; d_id <= 10; d_id++) {
-//               tpcc->loadCustomer(w_id, d_id);
-//               tpcc->loadOrders(w_id, d_id);
-//            }
-//         }
-//      });
-//   }
-//   cerr << "space: " << (bm.allocCount.load()*pageSize)/(float)bm.gb << " GB " << endl;
-//
-//   bm.readCount = 0;
-//   bm.writeCount = 0;
-//   thread statThread(statFn);
-//
+  {
+     tpcc->loadItem();
+     tpcc->loadWarehouse();
+
+     parallel_for(1, warehouseCount+1, nthreads, [&](uint64_t worker, uint64_t begin, uint64_t end) {
+        workerThreadId = worker;
+        for (Integer w_id=begin; w_id<end; w_id++) {
+           tpcc->loadStock(w_id);
+           tpcc->loadDistrinct(w_id);
+           for (Integer d_id = 1; d_id <= 10; d_id++) {
+              tpcc->loadCustomer(w_id, d_id);
+              tpcc->loadOrders(w_id, d_id);
+           }
+        }
+     });
+  }
+  cerr << "space: " << (bm.allocCount.load()*pageSize)/(float)bm.gb << " GB " << endl;
+
+  bm.readCount = 0;
+  bm.writeCount = 0;
+  thread statThread(statFn);
+
 //   parallel_for(0, nthreads, nthreads, [&](uint64_t worker, uint64_t begin, uint64_t end) {
 //      workerThreadId = worker;
 //      u64 cnt = 0;
@@ -1858,8 +1858,8 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
 //      }
 //      txProgress += cnt;
 //   });
-//
-//   statThread.join();
+
+  statThread.join();
    cerr << "space: " << (bm.allocCount.load()*pageSize)/(float)bm.gb << " GB " << endl;
 
    return tpcc;
