@@ -1593,6 +1593,7 @@ struct vmcacheAdapter
 
    public:
    void forEach(const std::function<const Record&>& consumer) {
+      u8 kk[Record::maxFoldLength()];
       tree.scanAsc({(u8*)nullptr, 0}, [&](BTreeNode& node, unsigned slot) {
          memcpy(kk, node.getPrefix(), node.prefixLen);
          memcpy(kk+node.prefixLen, node.getKey(slot), node.slot[slot].keyLen);
