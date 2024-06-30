@@ -1728,8 +1728,8 @@ TPCCWorkload<vmcacheAdapter>* getTPCCWorkload(int argc, char** argv) {
    }
 
    unsigned nthreads = envOr("THREADS", 1);
-   u64 n = envOr("DATASIZE", 3); // 10
-   u64 runForSec = envOr("RUNFOR", 30);
+   u64 n = envOr("DATASIZE", 1); // 10
+   u64 runForSec = envOr("RUNFOR", 1);
    bool isRndread = envOr("RNDREAD", 0);
 
    u64 statDiff = 1e8;
