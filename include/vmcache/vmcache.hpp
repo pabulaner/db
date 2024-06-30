@@ -625,7 +625,7 @@ BufferManager::BufferManager() : virtSize(envOr("VIRTGB", 16)*gb), physSize(envO
    for (u64 i=0; i<virtCount; i++)
       pageState[i].init();
    if (virtMem == MAP_FAILED)
-      die("mmap failed");
+      die("mmap failed2");
 
    libaioInterface.reserve(maxWorkerThreads);
    for (unsigned i=0; i<maxWorkerThreads; i++)
